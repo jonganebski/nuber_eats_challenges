@@ -1,8 +1,22 @@
-import { Episode } from '../entities/episode.entity';
+import {
+  Field,
+  InputType,
+  ObjectType,
+  PartialType,
+  PickType,
+} from '@nestjs/graphql';
+import { Podcast } from '../entities/podcast.entity';
 
-export class UpdatePodcastDto {
-  readonly title?: string;
-  readonly category?: string;
-  readonly rating?: number;
-  readonly episodes?: Episode[];
+@InputType()
+export class UpdatePodcastInput extends PartialType(
+  PickType(Podcast, ['title', 'category', 'rating', 'episodes']),
+) {
+  @Field(() => Number)
+  podcastId: number;
+}
+
+@ObjectType()
+export class UpdatePodcastOutput {
+  @Field(() => String, { nullable: true })
+  err?: string;
 }
