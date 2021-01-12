@@ -5,12 +5,13 @@ import { Podcast } from '../entities/podcast.entity';
 export class CreatePodcastInput extends PickType(Podcast, [
   'title',
   'category',
+  'about',
 ]) {}
 
 @ObjectType()
 export class CreatePodcastOutput {
-  @Field(() => Number)
-  id: number;
+  @Field(() => Number, { nullable: true })
+  id?: number;
 
   @Field(() => String, { nullable: true })
   err?: string;

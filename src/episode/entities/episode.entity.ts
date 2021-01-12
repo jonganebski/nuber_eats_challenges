@@ -1,21 +1,19 @@
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { IsNumber, IsOptional, IsString, IsUrl } from 'class-validator';
-import { Users } from 'src/user/entities/user.entity';
+import { Podcast } from 'src/podcast/entities/podcast.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Episode } from '../../episode/entities/episode.entity';
 
-@InputType('PodcastInputType', { isAbstract: true })
+@InputType('EpisodeInputType', { isAbstract: true })
 @ObjectType()
 @Entity()
-export class Podcast {
+export class Episode {
   @Field(() => Number)
   @PrimaryGeneratedColumn()
   id: number;
@@ -38,34 +36,26 @@ export class Podcast {
   @IsString()
   category: string;
 
-  @Field(() => String)
-  @Column({ default: '' })
-  @IsString()
-  about: string;
-
   @Field(() => Number)
   @Column({ default: 0 })
   @IsNumber()
   rating: number;
+
+  @Field(() => String)
+  @Column({ default: '' })
+  @IsString()
+  about: string;
 
   @Field(() => String, { nullable: true })
   @Column({ nullable: true })
   @IsOptional()
   @IsString()
   @IsUrl()
-  coverUrl?: string;
+  url?: string;
 
-  @Field(() => Users)
-  @ManyToOne(() => Users, (users) => users.podcasts, { onDelete: 'CASCADE' })
-  host: Users;
-
-  @Field(() => Users)
-  @ManyToOne(() => Users, (users) => users.subscribed, {
-    onDelete: 'NO ACTION',
+  @Field(() => Podcast)
+  @ManyToOne(() => Podcast, (podcast) => podcast.episodes, {
+    onDelete: 'CASCADE',
   })
-  subscriber: Users;
-
-  @Field(() => [Episode])
-  @OneToMany(() => Episode, (episode) => episode.podcast)
-  episodes: Episode[];
+  podcast: Podcast;
 }

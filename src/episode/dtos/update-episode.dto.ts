@@ -2,17 +2,24 @@ import {
   Field,
   InputType,
   ObjectType,
+  OmitType,
   PartialType,
-  PickType,
 } from '@nestjs/graphql';
+import { IsNumber, IsOptional } from 'class-validator';
 import { Episode } from '../entities/episode.entity';
 
 @InputType()
 export class UpdateEpisodeInput extends PartialType(
-  PickType(Episode, ['title', 'category', 'rating']),
+  OmitType(Episode, ['id', 'podcast']),
 ) {
   @Field(() => Number)
+  @IsNumber()
   episodeId: number;
+
+  @Field(() => Number, { nullable: true })
+  @IsOptional()
+  @IsNumber()
+  podcastId?: number;
 }
 
 @ObjectType()

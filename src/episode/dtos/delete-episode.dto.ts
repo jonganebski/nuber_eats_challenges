@@ -3,7 +3,7 @@ import { Field, InputType, ObjectType } from '@nestjs/graphql';
 @InputType()
 export class DeleteEpisodeInput {
   @Field(() => Number)
-  episodeId: number;
+  id: number;
 }
 
 @ObjectType()
