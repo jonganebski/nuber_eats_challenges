@@ -31,11 +31,6 @@ export class Episode {
   @IsString()
   title: string;
 
-  @Field(() => String)
-  @Column()
-  @IsString()
-  category: string;
-
   @Field(() => Number)
   @Column({ default: 0 })
   @IsNumber()

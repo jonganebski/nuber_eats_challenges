@@ -10,8 +10,8 @@ import {
   DeletePodcastInput,
   DeletePodcastOutput,
 } from './dtos/delete-podcast.dto';
-import { GetPodcastInput, GetPodcastOutput } from './dtos/get-podcast.dto';
-import { AllPodcastsOutput } from './dtos/get-podcasts.dto';
+import { GetPodcastInput, GetPodcastOutput } from './dtos/see-podcast.dto';
+import { AllPodcastsOutput } from './dtos/see-podcasts.dto';
 import {
   UpdatePodcastInput,
   UpdatePodcastOutput,

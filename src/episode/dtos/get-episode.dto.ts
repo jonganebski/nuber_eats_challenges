@@ -1,5 +1,4 @@
 import { Field, InputType, ObjectType, PickType } from '@nestjs/graphql';
-import { IsNumber } from 'class-validator';
 import { Episode } from '../entities/episode.entity';
 
 @InputType()

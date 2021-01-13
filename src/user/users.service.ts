@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { Args } from '@nestjs/graphql';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from 'src/jwt/jwt.service';
 import { Repository } from 'typeorm';
@@ -11,10 +10,10 @@ import {
   DeleteAccountInput,
   DeleteAccountOutput,
 } from './dtos/delete-account.dto';
-import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
-import { Users } from './entities/user.entity';
+import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { SeeProfileInput, SeeProfileOutput } from './dtos/see-profile.dto';
+import { Users } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -76,24 +75,23 @@ export class UsersService {
 
   async editProfile(
     id: number,
-    { email, username, password }: EditProfileInput,
+    editProfileInput: EditProfileInput,
   ): Promise<EditProfileOutput> {
     try {
-      const user = await this.users.findOne(
-        { id },
-        { select: ['email', 'username', 'password'] },
-      );
-      const isChangingEmail = Boolean(email !== user.email);
+      const user = await this.users.findOne({ id });
+      const isChangingEmail = Boolean(editProfileInput.email !== user.email);
       if (isChangingEmail) {
-        const existingUser = await this.users.findOne({ email });
+        const existingUser = await this.users.findOne({
+          email: editProfileInput.email,
+        });
         if (existingUser) {
           return { err: 'This email already exists.' };
         }
       }
-      await this.users.save([{ ...user, email, username, password }]);
+      await this.users.save([{ ...user, ...editProfileInput }]);
       return {};
-    } catch {
-      return { err: 'Failed to update account' };
+    } catch (err) {
+      return { err: 'Failed to edit profile.' };
     }
   }
 

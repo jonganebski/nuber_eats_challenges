@@ -13,9 +13,8 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { Episode } from './episode/entities/episode.entity';
 import { EpisodesModule } from './episode/episodes.module';
-import { JwtMidddlware } from './jwt/jwt.middleware';
+import { JwtMiddleware } from './jwt/jwt.middleware';
 import { JwtModule } from './jwt/jwt.module';
-import { JwtService } from './jwt/jwt.service';
 import { Podcast } from './podcast/entities/podcast.entity';
 import { PodcastsModule } from './podcast/podcasts.module';
 import { Users } from './user/entities/user.entity';
@@ -66,7 +65,7 @@ import { UsersModule } from './user/users.module';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(JwtMidddlware)
+      .apply(JwtMiddleware)
       .forRoutes({ path: '*', method: RequestMethod.ALL });
   }
 }
