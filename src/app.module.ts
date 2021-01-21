@@ -1,71 +1,44 @@
-import {
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  RequestMethod,
-} from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { GraphQLModule } from '@nestjs/graphql';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import * as Joi from 'joi';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
-import { Episode } from './episode/entities/episode.entity';
-import { EpisodesModule } from './episode/episodes.module';
-import { JwtMiddleware } from './jwt/jwt.middleware';
-import { JwtModule } from './jwt/jwt.module';
-import { Podcast } from './podcast/entities/podcast.entity';
-import { PodcastsModule } from './podcast/podcasts.module';
-import { Users } from './user/entities/user.entity';
-import { UsersModule } from './user/users.module';
+import { Module, RequestMethod, MiddlewareConsumer } from "@nestjs/common";
+import { GraphQLModule } from "@nestjs/graphql";
+import { PodcastsModule } from "./podcast/podcasts.module";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { Podcast } from "./podcast/entities/podcast.entity";
+import { Episode } from "./podcast/entities/episode.entity";
+import { Review } from "./podcast/entities/review.entity";
+import { User } from "./users/entities/user.entity";
+import { UsersModule } from "./users/users.module";
+import { JwtModule } from "./jwt/jwt.module";
+import { JwtMiddleware } from "./jwt/jwt.middleware";
+import { AuthModule } from "./auth/auth.module";
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath:
-        process.env.NODE_ENV === 'development' ? '.env.dev' : '.env.test',
-      ignoreEnvFile: process.env.NODE_ENV === 'production',
-      validationSchema: Joi.object({
-        POSTGRES_HOST: Joi.string().required(),
-        POSTGRES_PORT: Joi.string().required(),
-        POSTGRES_USERNAME: Joi.string().required(),
-        POSTGRES_PASSWORD: Joi.string().required(),
-        POSTGRES_DATABASE: Joi.string().required(),
-        JWT_SECRET: Joi.string().required(),
-      }),
+    TypeOrmModule.forRoot({
+      type: "sqlite",
+      database: "db.sqlite3",
+      synchronize: true,
+      logging: process.env.NODE_ENV !== "test",
+      entities: [Podcast, Episode, User, Review]
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
       context: ({ req }) => {
-        return { user: req.user };
-      },
+        return { user: req["user"] };
+      }
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.POSTGRES_HOST,
-      port: +process.env.POSTGRES_PORT,
-      username: process.env.POSTGRES_USERNAME,
-      password: process.env.POSTGRES_PASSWORD,
-      database: process.env.POSTGRES_DATABASE,
-      logging: process.env.NODE_ENV === 'development',
-      entities: [Users, Podcast, Episode],
-      synchronize: true, // take care of this on production
+    JwtModule.forRoot({
+      privateKey: "8mMJe5dMGORyoRPLvngA8U4aLTF3WasX"
     }),
-    JwtModule.forRoot({ jwtSecret: process.env.JWT_SECRET }),
-    AuthModule,
-    UsersModule,
     PodcastsModule,
-    EpisodesModule,
-  ],
-  controllers: [AppController],
-  providers: [AppService],
+    UsersModule,
+    AuthModule
+  ]
 })
-export class AppModule implements NestModule {
+export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(JwtMiddleware)
-      .forRoutes({ path: '*', method: RequestMethod.ALL });
+    consumer.apply(JwtMiddleware).forRoutes({
+      path: "/graphql",
+      method: RequestMethod.POST
+    });
   }
 }

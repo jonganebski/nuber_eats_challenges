@@ -1,71 +1,45 @@
-import { Field, InputType, ObjectType } from '@nestjs/graphql';
-import { IsNumber, IsOptional, IsString, IsUrl } from 'class-validator';
-import { Users } from 'src/user/entities/user.entity';
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  ManyToOne,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
-import { Episode } from '../../episode/entities/episode.entity';
+import { Episode } from "./episode.entity";
+import { ObjectType, Field } from "@nestjs/graphql";
+import { IsString, Min, Max, IsNumber } from "class-validator";
+import { Column, Entity, OneToMany, ManyToOne, RelationId } from "typeorm";
+import { CoreEntity } from "./core.entity";
+import { Review } from "./review.entity";
+import { User } from "../../users/entities/user.entity";
 
-@InputType('PodcastInputType', { isAbstract: true })
-@ObjectType()
 @Entity()
-export class Podcast {
-  @Field(() => Number)
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Field(() => Date)
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @Field(() => Date)
-  @UpdateDateColumn()
-  updatedAt: Date;
-
-  @Field(() => String)
+@ObjectType()
+export class Podcast extends CoreEntity {
   @Column()
+  @Field((type) => String)
   @IsString()
   title: string;
 
-  @Field(() => String)
   @Column()
+  @Field((type) => String)
   @IsString()
   category: string;
 
-  @Field(() => String)
-  @Column({ default: '' })
-  @IsString()
-  about: string;
-
-  @Field(() => Number)
   @Column({ default: 0 })
+  @Field((type) => Number)
   @IsNumber()
+  @Min(0)
+  @Max(5)
   rating: number;
 
-  @Field(() => String, { nullable: true })
-  @Column({ nullable: true })
-  @IsOptional()
-  @IsString()
-  @IsUrl()
-  coverUrl?: string;
-
-  @Field(() => Users)
-  @ManyToOne(() => Users, (users) => users.podcasts, { onDelete: 'CASCADE' })
-  host: Users;
-
-  @Field(() => Users)
-  @ManyToOne(() => Users, (users) => users.subscribed, {
-    onDelete: 'NO ACTION',
+  @Field(() => User)
+  @ManyToOne(() => User, (user) => user.podcasts, {
+    onDelete: "CASCADE"
   })
-  subscriber: Users;
+  creator: User;
 
-  @Field(() => [Episode])
+  @RelationId((podcast: Podcast) => podcast.creator)
+  creatorId: number;
+
   @OneToMany(() => Episode, (episode) => episode.podcast)
+  @Field((type) => [Episode])
   episodes: Episode[];
+
+  @OneToMany(() => Review, (review) => review.podcast)
+  @Field((type) => [Review])
+  reviews: Review[];
 }

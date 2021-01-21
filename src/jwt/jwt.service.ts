@@ -1,16 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { sign, verify } from 'jsonwebtoken';
-import { CONFIG_OPTIONS } from 'src/common/common.constants';
-import { IJwtModuleOptions } from './jwt.interfaces';
+import * as jwt from 'jsonwebtoken';
+import { JwtModuleOptions } from './jwt.interfaces';
+import { CONFIG_OPTIONS } from './jwt.constants';
+
 @Injectable()
 export class JwtService {
   constructor(
-    @Inject(CONFIG_OPTIONS) private readonly options: IJwtModuleOptions,
+    @Inject(CONFIG_OPTIONS) private readonly options: JwtModuleOptions,
   ) {}
-  signToken(userId: number) {
-    return sign({ id: userId }, this.options.jwtSecret);
+
+  sign(userId: number): string {
+    return jwt.sign({ id: userId }, this.options.privateKey);
   }
-  verifyToken(token: string) {
-    return verify(token, this.options.jwtSecret);
+
+  verify(token: string) {
+    return jwt.verify(token, this.options.privateKey);
   }
 }
