@@ -14,31 +14,36 @@ import { AuthModule } from "./auth/auth.module";
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-      type: "sqlite",
-      database: "db.sqlite3",
+      ...(process.env.DATABASE_URL
+        ? { type: "postgres", url: process.env.DATABASE_URL }
+        : {
+            type: "sqlite",
+            database: "db.sqlite3",
+          }),
       synchronize: true,
-      logging: process.env.NODE_ENV !== "test",
-      entities: [Podcast, Episode, User, Review]
+      logging: process.env.NODE_ENV !== "development",
+      entities: [Podcast, Episode, User, Review],
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
       context: ({ req }) => {
         return { user: req["user"] };
-      }
+      },
     }),
     JwtModule.forRoot({
-      privateKey: "8mMJe5dMGORyoRPLvngA8U4aLTF3WasX"
+      privateKey:
+        process.env.JWT_PRIVATE_KEY ?? "R5KLyzlKSElntjQPVUFFPcgiplg7q2Lg",
     }),
     PodcastsModule,
     UsersModule,
-    AuthModule
-  ]
+    AuthModule,
+  ],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(JwtMiddleware).forRoutes({
       path: "/graphql",
-      method: RequestMethod.POST
+      method: RequestMethod.POST,
     });
   }
 }

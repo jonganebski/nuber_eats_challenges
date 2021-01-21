@@ -2,11 +2,11 @@ import { Injectable } from "@nestjs/common";
 import { User } from "./entities/user.entity";
 import {
   CreateAccountInput,
-  CreateAccountOutput
+  CreateAccountOutput,
 } from "./dtos/create-account.dto";
 import {
   ToggleSubscribeInput,
-  ToggleSubscribeOutput
+  ToggleSubscribeOutput,
 } from "./dtos/subscribe.dto";
 import { LoginInput, LoginOutput } from "./dtos/login.dto";
 import { InjectRepository } from "@nestjs/typeorm";
@@ -17,7 +17,7 @@ import { EditProfileInput, EditProfileOutput } from "./dtos/edit-profile.dto";
 import { Podcast } from "../podcast/entities/podcast.entity";
 import {
   MarkEpisodeAsPlayedInput,
-  MarkEpisodeAsPlayedOutput
+  MarkEpisodeAsPlayedOutput,
 } from "./dtos/mark-episode-played.dto";
 import { Episode } from "src/podcast/entities/episode.entity";
 
@@ -35,13 +35,13 @@ export class UsersService {
 
   private readonly InternalServerErrorOutput = {
     ok: false,
-    error: "Internal server error occurred."
+    error: "Internal server error occurred.",
   };
 
   async createAccount({
     email,
     password,
-    role
+    role,
   }: CreateAccountInput): Promise<CreateAccountOutput> {
     try {
       const exists = await this.users.findOne({ email });
@@ -51,18 +51,18 @@ export class UsersService {
       const user = this.users.create({
         email,
         password,
-        role
+        role,
       });
       await this.users.save(user);
 
       return {
         ok: true,
-        error: null
+        error: null,
       };
     } catch {
       return {
         ok: false,
-        error: "Could not create account"
+        error: "Could not create account",
       };
     }
   }
@@ -79,7 +79,7 @@ export class UsersService {
       if (!passwordCorrect) {
         return {
           ok: false,
-          error: "Wrong password"
+          error: "Wrong password",
         };
       }
 
@@ -87,12 +87,12 @@ export class UsersService {
 
       return {
         ok: true,
-        token
+        token,
       };
     } catch (error) {
       return {
         ok: false,
-        error
+        error,
       };
     }
   }
@@ -102,12 +102,12 @@ export class UsersService {
       const user = await this.users.findOneOrFail({ id });
       return {
         ok: true,
-        user
+        user,
       };
     } catch (error) {
       return {
         ok: false,
-        error: "User Not Found"
+        error: "User Not Found",
       };
     }
   }
@@ -124,12 +124,12 @@ export class UsersService {
 
       await this.users.save(user);
       return {
-        ok: true
+        ok: true,
       };
     } catch (error) {
       return {
         ok: false,
-        error: "Could not update profile"
+        error: "Could not update profile",
       };
     }
   }
@@ -148,7 +148,6 @@ export class UsersService {
           (sub) => sub.id !== podcast.id
         );
       } else {
-        console.log("foo");
         user.subsriptions = [...user.subsriptions, podcast];
       }
       await this.users.save(user);
