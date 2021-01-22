@@ -11,7 +11,7 @@ import { JwtModule } from "./jwt/jwt.module";
 import { JwtMiddleware } from "./jwt/jwt.middleware";
 import { AuthModule } from "./auth/auth.module";
 import { ConfigModule } from "@nestjs/config";
-import Joi from "joi";
+import * as Joi from "joi";
 
 @Module({
   imports: [
