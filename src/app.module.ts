@@ -10,9 +10,20 @@ import { UsersModule } from "./users/users.module";
 import { JwtModule } from "./jwt/jwt.module";
 import { JwtMiddleware } from "./jwt/jwt.middleware";
 import { AuthModule } from "./auth/auth.module";
+import { ConfigModule } from "@nestjs/config";
+import Joi from "joi";
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      ignoreEnvFile: process.env.NODE_ENV === "production",
+      validationSchema: Joi.object({
+        NODE_ENV: Joi.string()
+          .valid("development", "production", "test")
+          .required(),
+      }),
+    }),
     TypeOrmModule.forRoot({
       ...(process.env.DATABASE_URL
         ? { type: "postgres", url: process.env.DATABASE_URL }
@@ -21,11 +32,12 @@ import { AuthModule } from "./auth/auth.module";
             database: "db.sqlite3",
           }),
       synchronize: true,
-      logging: process.env.NODE_ENV !== "development",
+      logging: process.env.NODE_ENV === "development",
       entities: [Podcast, Episode, User, Review],
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
+      playground: true,
       context: ({ req }) => {
         return { user: req["user"] };
       },
@@ -43,7 +55,7 @@ export class AppModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(JwtMiddleware).forRoutes({
       path: "/graphql",
-      method: RequestMethod.POST,
+      method: RequestMethod.ALL,
     });
   }
 }
