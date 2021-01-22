@@ -17,19 +17,31 @@ import Joi from "joi";
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath:
+        process.env.NODE_ENV === "development" ? ".env.dev" : ".env.test",
       ignoreEnvFile: process.env.NODE_ENV === "production",
       validationSchema: Joi.object({
         NODE_ENV: Joi.string()
           .valid("development", "production", "test")
           .required(),
+        POSTGRES_HOST: Joi.string(),
+        POSTGRES_PORT: Joi.string(),
+        POSTGRES_USERNAME: Joi.string(),
+        POSTGRES_PASSWORD: Joi.string(),
+        POSTGRES_DATABASE: Joi.string(),
+        JWT_PRIVATE_KEY: Joi.string().required(),
       }),
     }),
     TypeOrmModule.forRoot({
+      type: "postgres",
       ...(process.env.DATABASE_URL
-        ? { type: "postgres", url: process.env.DATABASE_URL }
+        ? { url: process.env.DATABASE_URL }
         : {
-            type: "sqlite",
-            database: "db.sqlite3",
+            host: process.env.POSTGRES_HOST,
+            port: +process.env.POSTGRES_PORT,
+            username: process.env.POSTGRES_USERNAME,
+            password: process.env.POSTGRES_PASSWORD,
+            database: process.env.POSTGRES_DATABASE,
           }),
       synchronize: true,
       logging: process.env.NODE_ENV === "development",
@@ -43,8 +55,7 @@ import Joi from "joi";
       },
     }),
     JwtModule.forRoot({
-      privateKey:
-        process.env.JWT_PRIVATE_KEY ?? "R5KLyzlKSElntjQPVUFFPcgiplg7q2Lg",
+      privateKey: process.env.JWT_PRIVATE_KEY,
     }),
     PodcastsModule,
     UsersModule,
