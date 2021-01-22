@@ -50,6 +50,7 @@ import * as Joi from "joi";
     GraphQLModule.forRoot({
       autoSchemaFile: true,
       playground: true,
+      introspection: true,
       context: ({ req }) => {
         return { user: req["user"] };
       },
