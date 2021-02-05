@@ -1,11 +1,11 @@
 import { Injectable } from "@nestjs/common";
 import {
   CreateEpisodeInput,
-  CreateEpisodeOutput
+  CreateEpisodeOutput,
 } from "./dtos/create-episode.dto";
 import {
   CreatePodcastInput,
-  CreatePodcastOutput
+  CreatePodcastOutput,
 } from "./dtos/create-podcast.dto";
 import { UpdateEpisodeInput } from "./dtos/update-episode.dto";
 import { UpdatePodcastInput } from "./dtos/update-podcast.dto";
@@ -18,17 +18,17 @@ import {
   EpisodesOutput,
   EpisodesSearchInput,
   GetAllPodcastsOutput,
-  GetEpisodeOutput
+  GetEpisodeOutput,
 } from "./dtos/podcast.dto";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, Raw, Like } from "typeorm";
 import {
   SearchPodcastsInput,
-  SearchPodcastsOutput
+  SearchPodcastsOutput,
 } from "./dtos/search-podcasts.dto";
 import {
   CreateReviewInput,
-  CreateReviewOutput
+  CreateReviewOutput,
 } from "./dtos/create-review.dto";
 import { User } from "src/users/entities/user.entity";
 
@@ -45,7 +45,7 @@ export class PodcastsService {
 
   private readonly InternalServerErrorOutput = {
     ok: false,
-    error: "Internal server error occurred."
+    error: "Internal server error occurred.",
   };
 
   async getAllPodcasts(): Promise<GetAllPodcastsOutput> {
@@ -53,7 +53,7 @@ export class PodcastsService {
       const podcasts = await this.podcastRepository.find();
       return {
         ok: true,
-        podcasts
+        podcasts,
       };
     } catch (e) {
       return this.InternalServerErrorOutput;
@@ -62,15 +62,17 @@ export class PodcastsService {
 
   async createPodcast(
     creator: User,
-    { title, category }: CreatePodcastInput
+    createPodcastInput: CreatePodcastInput
   ): Promise<CreatePodcastOutput> {
     try {
-      const newPodcast = this.podcastRepository.create({ title, category });
+      const newPodcast = this.podcastRepository.create({
+        ...createPodcastInput,
+      });
       newPodcast.creator = creator;
       const { id } = await this.podcastRepository.save(newPodcast);
       return {
         ok: true,
-        id
+        id,
       };
     } catch (e) {
       return this.InternalServerErrorOutput;
@@ -86,12 +88,12 @@ export class PodcastsService {
       if (!podcast) {
         return {
           ok: false,
-          error: `Podcast with id ${id} not found`
+          error: `Podcast with id ${id} not found`,
         };
       }
       return {
         ok: true,
-        podcast
+        podcast,
       };
     } catch (e) {
       return this.InternalServerErrorOutput;
@@ -126,19 +128,9 @@ export class PodcastsService {
       if (podcast.creator.id !== user.id) {
         return { ok: false, error: "Not authorized" };
       }
-      if (
-        payload.rating !== null &&
-        (payload.rating < 1 || payload.rating > 5)
-      ) {
-        return {
-          ok: false,
-          error: "Rating must be between 1 and 5."
-        };
-      } else {
-        const updatedPodcast: Podcast = { ...podcast, ...payload };
-        await this.podcastRepository.save(updatedPodcast);
-        return { ok };
-      }
+      const updatedPodcast: Podcast = { ...podcast, ...payload };
+      await this.podcastRepository.save(updatedPodcast);
+      return { ok };
     } catch (e) {
       return this.InternalServerErrorOutput;
     }
@@ -146,14 +138,14 @@ export class PodcastsService {
 
   async searchPodcasts({
     titleQuery,
-    page
+    page,
   }: SearchPodcastsInput): Promise<SearchPodcastsOutput> {
     try {
       const [podcasts, totalCount] = await this.podcastRepository.findAndCount({
-        // where: { title: Raw((title) => `${title} LIKE ${titleQuery}`) },
         where: { title: Like(`%${titleQuery}%`) },
         take: 50,
-        skip: (page - 1) * 50
+        skip: (page - 1) * 50,
+        relations: ["creator"],
       });
       if (!podcasts) {
         return { ok: false, error: "Could not find podcasts" };
@@ -162,7 +154,7 @@ export class PodcastsService {
         ok: true,
         podcasts,
         totalCount,
-        totalPages: Math.ceil(totalCount / 50)
+        totalPages: Math.ceil(totalCount / 50),
       };
     } catch (err) {
       console.log(err);
@@ -177,13 +169,13 @@ export class PodcastsService {
     }
     return {
       ok: true,
-      episodes: podcast.episodes
+      episodes: podcast.episodes,
     };
   }
 
   async getEpisode({
     podcastId,
-    episodeId
+    episodeId,
   }: EpisodesSearchInput): Promise<GetEpisodeOutput> {
     const { episodes, ok, error } = await this.getEpisodes(podcastId);
     if (!ok) {
@@ -193,18 +185,18 @@ export class PodcastsService {
     if (!episode) {
       return {
         ok: false,
-        error: `Episode with id ${episodeId} not found in podcast with id ${podcastId}`
+        error: `Episode with id ${episodeId} not found in podcast with id ${podcastId}`,
       };
     }
     return {
       ok: true,
-      episode
+      episode,
     };
   }
 
   async createEpisode(
     user: User,
-    { podcastId, title, category }: CreateEpisodeInput
+    { podcastId, title, description }: CreateEpisodeInput
   ): Promise<CreateEpisodeOutput> {
     try {
       const { podcast, ok, error } = await this.getPodcast(podcastId);
@@ -214,12 +206,15 @@ export class PodcastsService {
       if (podcast.creator.id !== user.id) {
         return { ok: false, error: "Not authorized" };
       }
-      const newEpisode = this.episodeRepository.create({ title, category });
+      const newEpisode = this.episodeRepository.create({ title, description });
       newEpisode.podcast = podcast;
       const { id } = await this.episodeRepository.save(newEpisode);
+      podcast.updatedAt = new Date();
+      podcast.episodes = [...podcast.episodes, newEpisode];
+      this.podcastRepository.save([{ ...podcast }]);
       return {
         ok: true,
-        id
+        id,
       };
     } catch (e) {
       return this.InternalServerErrorOutput;
@@ -233,7 +228,7 @@ export class PodcastsService {
     try {
       const { episode, error, ok } = await this.getEpisode({
         podcastId,
-        episodeId
+        episodeId,
       });
       if (!ok) {
         return { ok, error };
@@ -255,7 +250,7 @@ export class PodcastsService {
     try {
       const { episode, ok, error } = await this.getEpisode({
         podcastId,
-        episodeId
+        episodeId,
       });
       if (!ok) {
         return { ok, error };
@@ -273,7 +268,7 @@ export class PodcastsService {
 
   async createReview(
     creator: User,
-    { title, text, podcastId }: CreateReviewInput
+    { title, text, podcastId, rating }: CreateReviewInput
   ): Promise<CreateReviewOutput> {
     try {
       const { ok, error: podcastFindErr, podcast } = await this.getPodcast(
@@ -282,7 +277,19 @@ export class PodcastsService {
       if (!ok || podcastFindErr) {
         return { ok: false, error: podcastFindErr };
       }
-      const review = this.reviewRepository.create({ title, text });
+      const reviewsCount = podcast.reviews.length;
+      let ratingAverage: number;
+      if (reviewsCount === 0) {
+        ratingAverage = rating;
+      } else {
+        ratingAverage =
+          (podcast.rating * reviewsCount) / (reviewsCount + 1) +
+          rating / reviewsCount;
+      }
+      const updatedPodcast: Podcast = { ...podcast, rating: ratingAverage };
+      await this.podcastRepository.save(updatedPodcast);
+
+      const review = this.reviewRepository.create({ title, text, rating });
       review.podcast = podcast;
       review.creator = creator;
       const { id } = await this.reviewRepository.save(review);

@@ -6,7 +6,7 @@ import { IsNumber } from "class-validator";
 @InputType()
 export class CreateReviewInput extends PickType(
   Review,
-  ["title", "text"],
+  ["title", "text", "rating"],
   InputType
 ) {
   @Field(() => Number)

@@ -2,7 +2,7 @@ import {
   ObjectType,
   Field,
   InputType,
-  registerEnumType
+  registerEnumType,
 } from "@nestjs/graphql";
 import { IsString, IsEmail } from "class-validator";
 import {
@@ -12,7 +12,7 @@ import {
   BeforeUpdate,
   OneToMany,
   ManyToMany,
-  JoinTable
+  JoinTable,
 } from "typeorm";
 import { CoreEntity } from "./core.entity";
 import * as bcrypt from "bcrypt";
@@ -23,7 +23,7 @@ import { Review } from "../../podcast/entities/review.entity";
 
 export enum UserRole {
   Host = "Host",
-  Listener = "Listener"
+  Listener = "Listener",
 }
 
 registerEnumType(UserRole, { name: "UserRole" });

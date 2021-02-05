@@ -12,14 +12,14 @@ export class Episode extends CoreEntity {
   @IsString()
   title: string;
 
-  @Column()
-  @Field((type) => String)
+  @Column({ nullable: true })
+  @Field((type) => String, { nullable: true })
   @IsString()
-  category: string;
+  description: string;
 
   @ManyToOne(() => Podcast, (podcast) => podcast.episodes, {
     onDelete: "CASCADE",
-    eager: true
+    eager: true,
   })
   @Field((type) => Podcast)
   podcast: Podcast;

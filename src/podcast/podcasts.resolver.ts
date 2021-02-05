@@ -3,7 +3,7 @@ import { PodcastsService } from "./podcasts.service";
 import { Podcast } from "./entities/podcast.entity";
 import {
   CreatePodcastInput,
-  CreatePodcastOutput
+  CreatePodcastOutput,
 } from "./dtos/create-podcast.dto";
 import { CoreOutput } from "./dtos/output.dto";
 import {
@@ -11,24 +11,24 @@ import {
   PodcastOutput,
   EpisodesOutput,
   EpisodesSearchInput,
-  GetAllPodcastsOutput
+  GetAllPodcastsOutput,
 } from "./dtos/podcast.dto";
 import { UpdatePodcastInput } from "./dtos/update-podcast.dto";
 import { Episode } from "./entities/episode.entity";
 import { Review } from "./entities/review.entity";
 import {
   CreateEpisodeInput,
-  CreateEpisodeOutput
+  CreateEpisodeOutput,
 } from "./dtos/create-episode.dto";
 import { UpdateEpisodeInput } from "./dtos/update-episode.dto";
 import { Role } from "src/auth/role.decorator";
 import {
   SearchPodcastsInput,
-  SearchPodcastsOutput
+  SearchPodcastsOutput,
 } from "./dtos/search-podcasts.dto";
 import {
   CreateReviewOutput,
-  CreateReviewInput
+  CreateReviewInput,
 } from "./dtos/create-review.dto";
 import { AuthUser } from "src/auth/auth-user.decorator";
 import { User } from "src/users/entities/user.entity";
@@ -77,7 +77,7 @@ export class PodcastsResolver {
   }
 
   @Query((returns) => SearchPodcastsOutput)
-  @Role(["Listener"])
+  @Role(["Listener", "Host"])
   searchPodcasts(
     @Args("input") searchPodcastsInput: SearchPodcastsInput
   ): Promise<SearchPodcastsOutput> {
